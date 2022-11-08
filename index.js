@@ -23,9 +23,16 @@ try{
  app.get('/foods', async(req, res) =>{
     const query = {};
     const cursor = foodCollection.find(query);
-    const foods = await cursor.toArray();
+    const foods = await cursor.limit(3).toArray();
     res.send(foods);
- })
+ });
+ app.get('/allfood', async(req, res) =>{
+    const query = {};
+    const cursor = foodCollection.find(query);
+    const allfood = await cursor.toArray();
+    res.send(allfood);
+ });
+
 }
 finally{
 
