@@ -21,6 +21,16 @@ try{
  const foodCollection = client.db('khFood').collection('foods');
  const reviewCollection = client.db('khFood').collection('review');
 
+
+//  addfoods
+ app.post("/allfood", async (req, res) => {
+    const addFood = req.body;
+    // console.log(result);
+    const result = await foodCollection.insertOne(addFood);
+    res.send(result);
+    console.log(result);
+})
+
  app.get('/foods', async(req, res) =>{
     const query = {};
     const cursor = foodCollection.find(query);
@@ -40,6 +50,9 @@ try{
     const service = await foodCollection.findOne(query)
     res.send(service)
 });
+
+
+
 
 
 //review
