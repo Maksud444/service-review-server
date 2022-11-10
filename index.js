@@ -83,7 +83,7 @@ app.post('/jwt', (req, res) => {
 
 
 //review
-app.get('/review',  async (req, res) => {
+app.get('/review', async (req, res) => {
     let query = {};
     if (req.query.email) {
         query = {
