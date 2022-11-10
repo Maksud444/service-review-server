@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 
@@ -15,6 +16,25 @@ app.use(express.json());
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.ctzede1.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+
+
+function verifyJWT(req, res, next) {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader) {
+        return res.status(401).send({ message: 'unauthorized access' });
+    }
+    const token = authHeader.split(' ')[1];
+
+    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, function (err, decoded) {
+        if (err) {
+            return res.status(403).send({ message: 'Forbidden access' });
+        }
+        req.decoded = decoded;
+        next();
+    })
+}
+
 async function run(){
 
 try{
@@ -22,6 +42,13 @@ try{
  const reviewCollection = client.db('khFood').collection('review');
 
 
+
+//  jwt token
+app.post('/jwt', (req, res) => {
+    const user = req.body;
+    const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1d' })
+    res.send({ token })
+})
 //  addfoods
  app.post("/allfood", async (req, res) => {
     const addFood = req.body;
@@ -56,7 +83,7 @@ try{
 
 
 //review
-app.get('/review', async (req, res) => {
+app.get('/review',  async (req, res) => {
     let query = {};
     if (req.query.email) {
         query = {
@@ -73,6 +100,20 @@ app.post('/review', async (req, res) => {
     const result = await reviewCollection.insertOne(review);
     res.send(result)
 });
+
+app.patch('/review/:id', async(req, res) =>{
+    const id = req.params.id;
+    console.log(id);
+    const status = req.body.status
+    const query = {_id: ObjectId(id)};
+    const updatervw = {
+        $set:{
+            status: status
+        }
+    }
+    const result = await reviewCollection.updateOne(query, updatervw);
+    res.send(result)
+})
 
 app.delete('/review/:id', async(req, res) =>{
     const id = req.params.id;
